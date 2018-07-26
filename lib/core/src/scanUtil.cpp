@@ -9,9 +9,6 @@
 #include "miscUtil.h"
 #include "rcGlobalExtern.h"
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/convenience.hpp>
-
 #include <cstdlib> // for std::abs
 
 #include <boost/filesystem/operations.hpp>
@@ -183,7 +180,9 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath ) {
     else {
         printf( "Could not find the requested data object or collection in iRODS.\n" );
     }
-    while (( 0 == status || UNIX_FILE_STAT_ERR == status )
+    //while (( 0 == status || UNIX_FILE_STAT_ERR == status )
+
+    while ( (0 == status || IRods_Error_Category (status, UNIX_FILE_STAT_ERR))
            && genQueryOut2->continueInx > 0)
     {
         genQueryInp2.continueInx = genQueryOut2->continueInx;
@@ -244,13 +243,13 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
             if (IRods_Error_Category (status, UNIX_FILE_STAT_ERR)) {
               printf( "Physical file %s on server %s is missing, corresponding to "
                       "iRODS object %s/%s\n", dataPath, loc, collName, dataName );
-              rcStat = UNIX_FILE_STAT_ERR;
+              rcStat = status;
             }
             else {
               rcOther = status;
             }
         }
-    } // for each data object i = 0 to rowCnt
+    } // for each data object i = 0 to rowCnt-1
 
     /*
      *    Prioritize the error returned
